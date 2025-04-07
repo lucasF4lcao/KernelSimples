@@ -46,10 +46,11 @@ int main(void) {
         // Verifica processos pendentes antes de continuar
         terminal_writestring("\nKernel Simples\n");
         terminal_writestring("1. Executar Processos (FCFS)\n");
-        terminal_writestring("2. Criar Processo\n");
-        terminal_writestring("3. Listar Processos\n");
-        terminal_writestring("4. Terminar Processo\n");
-        terminal_writestring("5. Sair\n");
+        terminal_writestring("2. Executar Processos (RR)\n");
+        terminal_writestring("3. Criar Processo\n");
+        terminal_writestring("4. Listar Processos\n");
+        terminal_writestring("5. Terminar Processo\n");
+        terminal_writestring("6. Sair\n");
         terminal_writestring("Escolha uma opção: ");
 
         scanf("%d", &opcao);
@@ -59,19 +60,22 @@ int main(void) {
                 execute_processes_fcfs();
                 break;
             case 2:
-                create_process();
+                terminal_writestring("Deu certo\n");
                 break;
             case 3:
-                list_processes();
+                create_process();
                 break;
             case 4:
+                list_processes();
+                break;
+            case 5:
                 terminal_writestring("Digite o ID do processo a ser terminado: ");
                 int id;
                 if (scanf("%d", &id) == 1) {
                     terminate_process(id);
                 }
                 break;
-            case 5:
+            case 6:
                  terminal_writestring("Sistema finalizado.\n");
                 exit(0);
                 break;
