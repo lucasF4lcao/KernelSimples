@@ -33,7 +33,7 @@ void create_process(void);
 void list_processes(void);
 void terminate_process(int id);
 void execute_processes_fcfs(void);
-
+void execute_processes_rr(void);
 
 
 // Função principal do kernel
@@ -60,7 +60,7 @@ int main(void) {
                 execute_processes_fcfs();
                 break;
             case 2:
-                terminal_writestring("Deu certo\n");
+                execute_processes_rr();
                 break;
             case 3:
                 create_process();
@@ -182,6 +182,94 @@ void execute_processes_fcfs(void) {
     }
     terminal_writestring("Todos os processos foram executados...\n");
 }
+
+// Função de escalonamento Round Robin
+void execute_processes_rr(void) {
+    const int quantum = 2;
+    int current_time = 0;
+
+    if (!process_list) {
+        terminal_writestring("Nenhum processo existente\n");
+        return;
+    }
+
+    terminal_writestring("Iniciando Escalonamento Round Robin...\n");
+
+    Process *current = process_list;
+    Process *prev = NULL;
+
+    while (process_list) {
+        current = process_list;
+        prev = NULL;
+
+        while (current) {
+            if (current->state == CONCLUIDO) {
+                prev = current;
+                current = current->next;
+                continue;
+            }
+
+            current->state = EM_EXECUCAO;
+            printf("Tempo: %d | Executando Processo %d\n", current_time, current->id);
+
+            int time_slice = (current->time_remaining > quantum) ? quantum : current->time_remaining;
+
+            for (int i = 0; i < time_slice; i++) {
+                sleep(1);
+                current_time++;
+                current->time_remaining--;
+                printf("Tempo: %d | Processo %d | Tempo restante: %d\n", current_time, current->id, current->time_remaining);
+            }
+
+            if (current->time_remaining <= 0) {
+                current->state = CONCLUIDO;
+                printf("Processo %d concluído!\n", current->id);
+            } else {
+                current->state = PRONTO;
+            }
+
+            // mover para o final da fila se não for concluído
+            Process* next = current->next;
+
+            if (current->state != CONCLUIDO) {
+                // mover para o final
+                if (current == process_list) {
+                    process_list = current->next;
+                } else if (prev) {
+                    prev->next = current->next;
+                }
+
+                // achar o final da lista
+                Process* tail = process_list;
+                if (!tail) {
+                    process_list = current;
+                    current->next = NULL;
+                } else {
+                    while (tail->next) {
+                        tail = tail->next;
+                    }
+                    tail->next = current;
+                    current->next = NULL;
+                }
+                current = next;
+            } else {
+                // remover da lista
+                if (current == process_list) {
+                    process_list = current->next;
+                    free(current);
+                    current = process_list;
+                } else if (prev) {
+                    prev->next = current->next;
+                    free(current);
+                    current = prev->next;
+                }
+            }
+        }
+    }
+
+    terminal_writestring("Todos os processos foram executados (RR).\n");
+}
+
 
 // Função para inicializar o terminal
 void terminal_initialize(void) {
